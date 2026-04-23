@@ -759,3 +759,5 @@ async function loadProductsFromDB() {
   const { data } = await supabase.from('products').select('*');
   return data || [];
 }
+import { logout } from "./auth.js";
+window.logout = logout;
