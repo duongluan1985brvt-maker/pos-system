@@ -673,3 +673,5 @@ function renderFilteredByGroup(list) {
     .join('');
 }
 
+import { logout } from "./auth.js";
+window.logout = logout;
