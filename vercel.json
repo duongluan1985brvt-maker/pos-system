@@ -1,5 +1,6 @@
 {
   "routes": [
-    { "handle": "filesystem" }
+    { "src": "/inventory", "dest": "/inventory.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
