@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý kho</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: Arial;
+      }
+
+      body {
+        margin: 0;
+        background: #f5f6fa;
+      }
+
+      /* ===== HEADER ===== */
+      .header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        height: 30px;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 15px;
+        z-index: 1000;
+      }
+
+      .header a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .title {
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      /* ===== CONTAINER ===== */
+      .container {
+        padding: 25px 5px 10px;
+        max-width: 1100px;
+        margin: auto;
+      }
+
+      /* ===== GRID ===== */
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      @media (min-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      /* ===== CARD ===== */
+      .card {
+        background: white;
+        padding: 18px;
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      }
+
+      /* ===== INPUT ===== */
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        outline: none;
+      }
+
+      /* ===== BUTTON ===== */
+      button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 12px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      /* ===== LIST ===== */
+      ul {
+        padding-left: 18px;
+      }
+
+      li {
+        margin-bottom: 6px;
+      }
+
+      /* ===== TITLE ===== */
+      h2,
+      h3 {
+        margin-top: 0;
+      }
+      input[type=number]::-webkit-outer-spin-button,
+      input[type=number]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .scroll-box {
+        max-height: 250px;   /* bạn có thể chỉnh 250–500px */
+        overflow-y: auto;
+      }
+      input[type=number] {
+        -moz-appearance: textfield;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- HEADER -->
+    <div class="header">
+      <div class="title">📦 QUẢN LÝ KHO</div>
+      <a href="index.html">💰 Bán hàng</a>
+    </div>
+
+    <div class="container">
+      
+
+      <!-- GRID 2 KHỐI -->
+      <div class="grid">
+        <!-- THÊM SẢN PHẨM -->
+        <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <h3 style="margin:0; font-size:16px;">Thêm sản phẩm</h3>
+      
+        <div style="display:flex; gap:6px;">
+          
+          <!-- NÚT TẢI FILE MẪU -->
+          <button onclick="downloadTemplate()" 
+            style="width:auto; padding:6px 10px; font-size:12px; background:#f59e0b;">
+            📄Mẫu
+          </button>
+      
+          <!-- NÚT IMPORT -->
+          <button onclick="document.getElementById('excelFile').click()" 
+            style="width:auto; padding:6px 10px; font-size:12px;">
+            📥 Nhập từ Excel
+          </button>
+      
+          <input type="file" id="excelFile" accept=".xlsx" 
+            style="display:none" onchange="importExcel(event)">
+        </div>
+      </div>
+
+          <input id="name" placeholder="Tên sản phẩm" />
+          <input id="stock" type="number" placeholder="Số lượng" />
+
+          <select id="unit">
+          <option value="kg">kg</option>
+          <option value="bịch">bịch</option>
+          <option value="ly">ly</option>
+          <option value="cây">cây</option>
+          <option value="other">+ Thêm đơn vị khác</option>
+          </select>
+        
+          <input id="unitCustom" placeholder="Nhập đơn vị mới" style="display:none;" />
+
+          <input id="import_price" placeholder="Giá nhập" />
+          <input id="price1" placeholder="Giá bán 1" />
+          <input id="price2" placeholder="Giá bán 2 (tuỳ chọn)" />
+
+          <button id="btnAdd">Thêm sản phẩm</button>
+        </div>
+
+        <!-- NHẬP HÀNG -->
+        <div class="card">
+          <h3 style="margin:0; font-size:16px;">Nhập hàng</h3>
+          
+          <select id="importSelect"></select>
+
+          <p><b>Tên:</b> <span id="importName"></span></p>
+          <p><b>Đơn vị:</b> <span id="importUnit"></span></p>
+
+          <input id="importQty" type="number" placeholder="Số lượng nhập" />
+          <input id="importPrice" placeholder="Giá nhập" />
+          <input id="importPrice1" placeholder="Giá bán 1 mới" />
+          <input id="importPrice2" placeholder="Giá bán 2 mới" />
+          <p><b>Giá vốn gần nhất:</b> <span id="lastCost">0 đ</span></p>
+          <p><b>Giá bán hiện tại:</b> <span id="currentPrice">0 đ</span></p>
+          <p><b>Lãi dự kiến:</b> <span id="profitPreview">0 đ</span></p>
+          <button id="btnImport">Nhập thêm</button>
+        </div>
+      </div>
+
+      <!-- DANH SÁCH -->
+      <div class="card" style="margin-top: 15px">
+        <h3 style="margin:0; font-size:16px;">Danh sách sản phẩm</h3>
+        <ul class="card scroll-box" id="list"></ul>
+      </div>
+
+      <!-- LỊCH SỬ -->
+      <div class="card" style="margin-top: 15px">
+        <h3 style="margin:0; font-size:16px;">Lịch sử nhập</h3>
+        <ul class="card scroll-box" id="importHistory"></ul>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script type="module" src="./src/inventory.js"></script>
+  </body>
+</html>

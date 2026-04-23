@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>POS</title>
+
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial;
+        background: #f3f6fb;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ===== HEADER ===== */
+      .header {
+        height: 30px;
+        background: #1d4ed8;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 12px;
+      }
+
+      .nav a {
+        color: white;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+
+      /* ===== MAIN FIX DESKTOP ===== */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        max-width: 1200px;
+        margin: auto;
+        width: 100%;
+      }
+
+      /* ===== PRODUCTS ===== */
+      .products-section {
+        flex: 1;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .products-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .products-grid {
+        margin-top: 8px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        overflow-y: auto;
+      }
+
+      .product {
+        background: white;
+        border-radius: 8px;
+        padding: 6px;            /* 👈 giảm từ 10 xuống 6 */
+        text-align: center;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      /* ===== CART ===== */
+      .cart {
+        height: 56%;
+        background: white;
+        border-top: 2px solid #ddd;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .cart-header {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .cart-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .cart-list {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .cart-item {
+        border-bottom: 1px solid #eee;
+        padding: 6px 0;
+      }
+
+      button {
+        padding: 6px 10px;
+        border: none;
+        border-radius: 6px;
+        background: #16a34a;
+        color: white;
+      }
+
+      /* ===== POPUP ===== */
+      .popup {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .popup-box {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        width: 300px;
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (min-width: 768px) {
+        .products-grid {
+          grid-template-columns: repeat(6, 1fr);
+        }
+      }
+
+      @media (min-width: 1200px) {
+        .products-grid {
+          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
+      }
+
+      .product.out-stock {
+        border: 2px solid red;
+        opacity: 0.5;
+      }
+      #monthPicker {
+        width: 120px; /* chỉnh nhỏ lại */
+        padding: 4px 6px;
+        font-size: 12px;
+      }
+      .cart-row {
+        display: flex;
+        justify-content: space-between; /* đẩy 2 bên */
+        align-items: center;
+        width: 100%; /* 👈 QUAN TRỌNG */
+        gap: 10px;
+      }
+
+      .cart-title {
+        margin: 0;
+      }
+
+      .cart-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap; /* 👈 tránh vỡ nút */
+      }
+      .popup-box {
+        background: white;
+        padding: 8px;          /* 👈 giảm từ 15 */
+        border-radius: 8px;
+        width: 240px;          /* 👈 nhỏ lại */
+        max-height: 300px;     /* 👈 tránh dài quá */
+        overflow-y: auto;      /* 👈 có scroll */
+        font-size: 13px;       /* 👈 chữ nhỏ hơn */
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+      <b style="margin:0; font-size:18px;">🛒 BÁN HÀNG</b>
+      <div class="nav">
+        <a href="inventory.html">📦 Quản lý kho</a>
+      </div>
+    </div>
+
+    <div class="main">
+      <!-- PRODUCTS -->
+      <div class="products-section">
+        <div class="products-header">
+          <h3 style="margin:0; font-size:14px;">SẢN PHẨM</h3>
+          <input id="search" placeholder="Tìm..." />
+        </div>
+
+        <div id="productGrid" class="products-grid"></div>
+      </div>
+
+      <!-- CART -->
+      <div class="cart">
+      <div class="cart-header">
+
+      <!-- HÀNG 1 -->
+      <div style="display:flex; gap:10px; align-items:center;">
+        <label></label>
+    
+        <div style="display:flex; flex-direction:column;">
+          <input type="month" id="monthPicker" onchange="updateMonthText()">
+          
+        </div>
+    
+        <button onclick="exportExcel()" style="background:#2ecc71;">
+          📊 Xuất Thu
+        </button>
+        
+      </div>
+      
+      <!-- HÀNG 2 -->
+      <div class="cart-row">
+      <h3 class="cart-title" style="margin:0; font-size:14px;">GIỎ HÀNG</h3>
+    
+      <div class="cart-actions">
+        <span id="profit">Lãi: 0 đ</span>
+        <b id="total">0 đ</b>
+        <button onclick="checkout()">Thanh toán</button>
+      </div>
+    </div>
+    
+    </div>
+
+        <div id="cartList" class="cart-list"></div>
+      </div>
+    </div>
+
+    <!-- POPUP -->
+    <div id="popup" class="popup">
+      <div id="popupBox" class="popup-box"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
+    
+    <script type="module" src="./src/sales.js"></script>
+  </body>
+</html>
