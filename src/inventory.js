@@ -671,7 +671,28 @@ window.importExcel = async function (event) {
     if (bestMatch && bestScore >= MATCH_THRESHOLD) {
       product = bestMatch;
     }
-
+    // 🔥 UPDATE GIÁ BÁN NẾU ĐÃ TỒN TẠI
+    if (product) {
+      const updateData = {};
+    
+      if (sellPrice != null && sellPrice !== '') {
+        updateData.price_sell_1 = Number(sellPrice);
+      }
+    
+      if (unit && unit !== product.unit) {
+        updateData.unit = unit;
+      }
+    
+      if (Object.keys(updateData).length > 0) {
+        await supabase
+          .from('products')
+          .update(updateData)
+          .eq('id', product.id);
+    
+        // cập nhật lại trong RAM luôn
+        Object.assign(product, updateData);
+      }
+    }
     // =========================
     // CREATE NEW PRODUCT IF NO MATCH
     // =========================
