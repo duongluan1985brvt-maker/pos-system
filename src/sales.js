@@ -71,11 +71,14 @@ async function loadStock() {
 // ================= GROUP =================
 function groupProducts() {
   const groups = {};
+
   products.forEach((p) => {
     const key = p.name.split(' ')[0].toLowerCase();
+
     if (!groups[key]) groups[key] = [];
     groups[key].push(p);
   });
+
   return groups;
 }
 
@@ -96,8 +99,12 @@ function renderProducts() {
       <div class="product ${totalStock <= 0 ? 'out-stock' : ''}"
           onclick="handleProductClick('${key}')">
 
-        <b>${key.toUpperCase()}</b>
-        <div>${list.length} loại</div>
+                ${
+          list.length === 1
+            ? `<b>${list[0].name}</b>`
+            : `<b>${key.toUpperCase()}</b>
+               <div>${list.length} loại</div>`
+        }
 
         <div style="color:${totalStock <= 0 ? 'red' : 'green'}">
           Tồn: ${totalStock} ${list[0].unit}
