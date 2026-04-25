@@ -493,7 +493,7 @@ window.exportExcel = async function () {
   ws.getRow(5).font = { bold: true };
 
   ws.mergeCells('A6:C6');
-  ws.getCell('A6').value = 'Địa điểm kinh doanh: ...';
+  ws.getCell('A6').value = 'Địa điểm kinh doanh: 34/5 Lương Văn Can, phường Vũng Tàu, TPHCM';
   ws.getCell('A6').alignment = center;
 
   ws.mergeCells('A7:C7');
@@ -626,6 +626,110 @@ window.exportExcel = async function () {
 
   const buf = await wb.xlsx.writeBuffer();
   saveAs(new Blob([buf]), `DoanhThu_${month}_${year}.xlsx`);
+
+  try {
+    // ===== CLONE FILE 1 =====
+    const bufClone = await wb.xlsx.writeBuffer();
+  
+    const wb2 = new ExcelJS.Workbook();
+    await wb2.xlsx.load(bufClone);
+  
+    const ws2 = wb2.getWorksheet('DoanhThu');
+  
+    // ===== BUILD DATA TỔNG HỢP =====
+    const summaryMap = {};
+  
+    data.forEach((x) => {
+      const date = new Date(x.created_at).toLocaleDateString('vi-VN');
+  
+      if (!summaryMap[date]) {
+        summaryMap[date] = { total: 0, products: new Set() };
+      }
+  
+      summaryMap[date].total += x.total_cost || 0;
+  
+      if (x.products?.name) {
+        summaryMap[date].products.add(x.products.name);
+      }
+    });
+  
+    const sortedDates2 = Object.keys(summaryMap).sort((a, b) => {
+      const [d1, m1, y1] = a.split('/');
+      const [d2, m2, y2] = b.split('/');
+      return new Date(`${y1}-${m1}-${d1}`) - new Date(`${y2}-${m2}-${d2}`);
+    });
+  
+    // ===== TEMPLATE DÒNG 11 =====
+    const templateRow = ws2.getRow(11);
+  
+    // ===== GHI DATA MỚI =====
+    let row2 = 11;
+  
+    sortedDates2.forEach((date) => {
+      const item = summaryMap[date];
+  
+      const newRow = ws2.getRow(row2);
+  
+      newRow.getCell(1).value = date;
+      newRow.getCell(2).value = Array.from(item.products).join(', ');
+      newRow.getCell(3).value = item.total;
+  
+      newRow.getCell(3).numFmt = '#,##0';
+  
+      // copy format dòng 11
+      templateRow.eachCell((cell, col) => {
+        const target = newRow.getCell(col);
+        target.style = JSON.parse(JSON.stringify(cell.style));
+      });
+  
+      row2++;
+    });
+  
+    // ===== TÌM FOOTER ("Tổng cộng") =====
+    let footerStart = null;
+  
+    ws2.eachRow((r, i) => {
+      const val = r.getCell(2).value;
+      if (val && val.toString().includes('Tổng cộng')) {
+        footerStart = i;
+      }
+    });
+  
+    // fallback nếu không tìm thấy
+    if (!footerStart) {
+      footerStart = ws2.lastRow.number - 3;
+    }
+  
+    // ===== XÓA DATA DƯ (KHÔNG ĐỤNG FOOTER) =====
+    for (let i = footerStart - 1; i >= row2; i--) {
+      ws2.spliceRows(i, 1);
+    }
+  
+    // ===== FIX FOOTER MERGE =====
+    ws2.eachRow((row, rowNumber) => {
+      const val = row.getCell(2).value;
+
+      if (
+        val &&
+        (
+          val.toString().includes('VT') ||
+          val.toString().includes('NGƯỜI ĐẠI DIỆN HỘ') ||
+          val.toString().includes('Đường Vũ Luân')
+        )
+      ) {
+        try {
+          ws2.mergeCells(`B${rowNumber}:C${rowNumber}`);
+        } catch (e) {}
+      }
+    });
+    // ===== SAVE FILE 2 =====
+    const buf2 = await wb2.xlsx.writeBuffer();
+    saveAs(new Blob([buf2]), `TongHop_${month}_${year}.xlsx`);
+  
+  } catch (err) {
+    console.error('❌ LỖI FILE 2:', err);
+    alert('Lỗi file tổng hợp');
+  }
 };
 
 window.updateMonthText = function () {
